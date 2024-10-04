@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import './App.css';
-import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import { Button, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 
 function App() {
   const [authorName, setAuthorName] = useState("");
   const [bookName, setBookName] = useState("");
   const [BooksList,setBooksList] = useState([]);
+  const [editById,setEditById] = useState({Id : "",AuthorName : "",BookName :"",cond:true});
   const AuthorChange = (e) =>{
     setAuthorName(e.target.value);
     
@@ -15,9 +16,35 @@ function App() {
   }
   const AddBookButton = () =>{
     const BookId = Math.floor(Math.random()*10000);
-    const Book = {Id : BookId, AuthorName : authorName, BookName : bookName};
+    const Book = {Id : BookId, AuthorName : authorName, BookName : bookName, cond : true};
     setBooksList([...BooksList,Book]);
-    console.log(BooksList);
+  }
+  const EditBookButton = (e) =>{
+    const id = Number(e.target.id);
+    const list = BooksList.find((book)=>book.Id===id);
+    setEditById({Id : list.Id,AuthorName : list.AuthorName, BookName : list.BookName,cond : false});
+  }
+  const SaveBookButton = (e) =>{
+    const id = Number(e.target.id);
+    const index = BooksList.findIndex((book)=>book.Id===id);
+    const list = BooksList;
+    setEditById({...editById,cond : true});
+    list.splice(index,1,editById);
+    setBooksList(list);
+  }
+  const UpdateChangeBook = (e) =>{
+    setEditById({...editById,BookName : e.target.value});
+  }
+  const UpdateChangeAuthor = (e) =>{
+    setEditById({...editById,AuthorName : e.target.value});
+  }
+  const DeleteBookButton = (e) =>{
+    const id = Number(e.target.id);
+    const index = BooksList.findIndex((book)=>book.Id===id);
+    const list = BooksList;
+    setEditById({...editById,cond : true});
+    list.splice(index,1);
+    setBooksList(list);
   }
   return (
     <div className="App">
@@ -42,8 +69,21 @@ function App() {
               sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
             >
               <TableCell component="th" scope="row">{row.Id}</TableCell>
-              <TableCell component="th" scope="row">{row.AuthorName}</TableCell>
-              <TableCell component="th" scope="row">{row.BookName}</TableCell>
+              {
+                editById.cond ?   <TableCell component="th" scope="row">{row.AuthorName}</TableCell> : row.Id===editById.Id ?
+                <TableCell component="th" scope="row"><input type='text' value={editById.AuthorName} onChange={UpdateChangeAuthor}/></TableCell> : 
+                <TableCell component="th" scope="row">{row.AuthorName}</TableCell> 
+              }
+               {
+                editById.cond ?   <TableCell component="th" scope="row">{row.BookName}</TableCell> : row.Id===editById.Id ?
+                <TableCell component="th" scope="row"><input type='text' value={editById.BookName} onChange={UpdateChangeBook} /></TableCell> : 
+                <TableCell component="th" scope="row">{row.BookName}</TableCell> 
+              }
+              <TableCell component="th" scope="row">
+                <Button onClick={EditBookButton} id={row.Id}>Edit</Button>
+                <Button onClick={SaveBookButton} id={row.Id}>Save</Button>
+                <Button onClick={DeleteBookButton} id={row.Id}>Delete</Button>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
